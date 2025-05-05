@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sleep Token Song Sorter</title>
+<style>
+body {
+font-family: Arial, sans-serif;
+margin: 20px;
+padding: 20px;
+background-color: #f3f3f3;
+color: #333;
+}
+.song-option {
+font-size: 24px;
+margin: 20px;
+cursor: pointer;
+padding: 10px;
+background-color: #fff;
+border-radius: 5px;
+border: 2px solid #ddd;
+transition: background-color 0.3s;
+}
+.song-option:hover {
+background-color: #ddd;
+}
+#results {
+margin-top: 30px;
+display: none;
+}
+</style>
+</head>
+<body>
+<h1>Sleep Token Song Sorter</h1>
+<p>Pick your favorite song between the two options below. Keep choosing until all songs are ranked.</p>
+
+<div id="song-container">
+<div id="song-1" class="song-option" onclick="chooseSong(1)"></div>
+<div id="song-2" class="song-option" onclick="chooseSong(2)"></div>
+</div>
+
+<div id="results">
+<h2>Ranking Completed</h2>
+<ol id="ranked-songs"></ol>
+</div>
+
+<script>
+// List of Sleep Token songs
+const songs = [
+"The Offering",
+"Alkaline",
+"The Night Does Not Belong to God",
+"Glimpse of the Sun",
+"Levitate",
+"Acensionism",
+"Jaws",
+"Vore",
+"Gods",
+"Telomere",
+"Swept Away",
+"Fate",
+"Nazareth"
+];
+
+// Store the ranking of songs based on choices
+let ranking = [];
+
+// Shuffle the songs for random pairing
+function shuffleArray(arr) {
+for (let i = arr.length - 1; i > 0; i--) {
+const j = Math.floor(Math.random() * (i + 1));
+[arr[i], arr[j]] = [arr[j], arr[i]]; // Swap elements
+}
+}
+
+// Initial shuffle
+shuffleArray(songs);
+
+// Function to display the current pair of songs
+function displaySongPair() {
+if (songs.length === 1) {
+showResults();
+return;
+}
+
+const song1 = songs.pop();
+const song2 = songs.pop();
+
+document.getElementById('song-1').innerText = song1;
+document.getElementById('song-2').innerText = song2;
+}
+
+// Function to handle song selection
+function chooseSong(choice) {
+const chosenSong = choice === 1 ? document.getElementById('song-1').innerText : document.getElementById('song-2').innerText;
+ranking.push(chosenSong);
+
+// Display next pair of songs
+displaySongPair();
+}
+
+// Function to show the final results
+function showResults() {
+document.getElementById('song-container').style.display = 'none';
+const rankedList = document.getElementById('ranked-songs');
+
+ranking.forEach(song => {
+const listItem = document.createElement('li');
+listItem.innerText = song;
+rankedList.appendChild(listItem);
+});
+
+document.getElementById('results').style.display = 'block';
+}
+
+// Start the sorter
+displaySongPair();
+</script>
+</body>
+</html>
