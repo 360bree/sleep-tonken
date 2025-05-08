@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sorter Name</title>
+  <link rel="icon" href="favicon.png" type="image/png">
+  <link href="https://fonts.googleapis.com/css?family=Josefin+Slab:600" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Times New Roman', serif;
+      text-align: center;
+      background-color: #ffffff;
+      color: #000;
+      max-width: 600px;
+      margin: auto;
+    }
+    #mainTable {
+      font-size: 18px;
+      border-spacing: 10px 5px;
+      margin: 20px auto;
+    }
+    .option-button {
+      width: 120px;
+      height: 150px;
+      border: 1px solid #000;
+      cursor: pointer;
+      display: inline-block;
+      vertical-align: top;
+      padding: 10px;
+      background-color: #f0f0f0;
+    }
+    .middle-button {
+      display: block;
+      margin: 10px auto;
+      padding: 10px 15px;
+      border: 1px solid #000;
+      cursor: pointer;
+      background-color: #f9f9f9;
+    }
+    table.result {
+      width: 100%;
+      border-collapse: collapse;
+      margin: auto;
+    }
+    table.result td {
+      border: 1px solid #000;
+      padding: 5px;
+    }
+    table.result th {
+      background-color: #e097d9;
+      color: #fff;
+      padding: 5px;
+    }
+    a {
+      color: #e097d9;
+      text-decoration: none;
+    }
+    a:hover {
+      color: #8f8f8f;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>SORTER NAME</h2>
+  <p>Pick who you like better in each battle to get an accurate list.<br>
+     Hitting "No opinion" or "I like both" often may affect accuracy.</p>
+
+  <div id="battleNumber"><strong>battle #1<br>0% sorted.</strong></div>
+
+  <div>
+    <div id="leftField" class="option-button" onclick="if (!finishFlag) sortList(-1);"></div>
+    <div id="rightField" class="option-button" onclick="if (!finishFlag) sortList(1);"></div>
+  </div>
+
+  <button class="middle-button" onclick="if (!finishFlag) sortList(0);">I like both / No opinion</button>
+
+  <div id="resultField"></div>
+
+  <p><small>Used with permission. <a href="http://biasorter.tumblr.com/">Created by Biasorter</a>.</small></p>
+
+  <script>
+    const namMember = ["option 1", "option 2", "option 3", "option 4", "option 5"];
+    let lstMember = [], parent = [], equal = [], rec = [];
+    let cmp1, cmp2, head1, head2, nrec;
+    let numQuestion, totalSize, finishSize, finishFlag;
+
+    function initList() {
+      let n = 0;
+      lstMember[n] = [...namMember.keys()];
+      parent[n] = -1;
+      totalSize = 0;
+      n++;
+
+      for (let i = 0; i < lstMember.length; i++) {
+        if (lstMember[i].length >= 2) {
+          const mid = Math.ceil(lstMember[i].length / 2);
+          lstMember[n] = lstMember[i].slice(0, mid);
+          totalSize += lstMember[n].length;
+          parent[n++] = i;
+
+          lstMember[n] = lstMember[i].slice(mid);
+          totalSize += lstMember[n].length;
+          parent[n++] = i;
+        }
+      }
+
+      rec = Array(namMember.length).fill(0);
+      equal = Array(namMember.length + 1).fill(-1);
+      nrec = 0;
+      cmp1 = lstMember.length - 2;
+      cmp2 = lstMember.length - 1;
+      head1 = 0;
+      head2 = 0;
+      numQuestion = 1;
+      finishSize = 0;
+      finishFlag = 0;
+    }
+
+    function sortList(flag) {
+      if (flag < 0) {
+        rec[nrec++] = lstMember[cmp1][head1++];
+        finishSize++;
+        while (equal[rec[nrec - 1]] !== -1) {
+          rec[nrec++] = lstMember[cmp1][head1++];
+          finishSize++;
+        }
+      } else if (flag > 0) {
+        rec[nrec++] = lstMember[cmp2][head2++];
+        finishSize++;
+        while (equal[rec[nrec - 1]] !== -1) {
+          rec[nrec++] = lstMember[cmp2][head2++];
+          finishSize++;
+        }
+      } else {
+        rec[nrec++] = lstMember[cmp1][head1++];
+        finishSize++;
+        while (equal[rec[nrec - 1]] !== -1) {
+          rec[nrec++] = lstMember[cmp1][head1++];
+          finishSize++;
+        }
+        equal[rec[nrec - 1]] = lstMember[cmp2][head2];
+        rec[nrec++] = lstMember[cmp2][head2++];
+        finishSize++;
+        while (equal[rec[nrec - 1]] !== -1) {
+          rec[nrec++] = lstMember[cmp2][head2++];
+          finishSize++;
+        }
+      }
+
+      if (head1 === lstMember[cmp1].length && head2 === lstMember[cmp2].length) {
+        lstMember[parent[cmp1]] = [...rec];
+        lstMember.pop();
+        lstMember.pop();
+        cmp1 -= 2;
+        cmp2 -= 2;
+        head1 = head2 = nrec = 0;
+        rec.fill(0);
+      }
+
+      if (cmp1 < 0) {
+        document.getElementById("battleNumber").innerHTML = `battle #${numQuestion - 1}<br>${Math.floor(finishSize * 100 / totalSize)}% sorted.`;
+        showResult();
+        finishFlag = 1;
+      } else {
+        showImage();
+      }
+    }
+
+    function showResult() {
+      let str = '<table class="result">';
+      str += '<tr><th>Rank</th><th>Option</th></tr>';
+      let rank = 1, sameRank = 1;
+
+      for (let i = 0; i < namMember.length; i++) {
+        const idx = lstMember[0][i];
+        str += `<tr><td>${rank}</td><td>${namMember[idx]}</td></tr>`;
+        if (i < namMember.length - 1) {
+          if (equal[idx] === lstMember[0][i + 1]) {
+            sameRank++;
+          } else {
+            rank += sameRank;
+            sameRank = 1;
+          }
+        }
+      }
+      str += '</table>';
+      document.getElementById("resultField").innerHTML = str;
+    }
+
+    function showImage() {
+      document.getElementById("battleNumber").innerHTML =
+        `battle #${numQuestion}<br>${Math.floor(finishSize * 100 / totalSize)}% sorted.`;
+      document.getElementById("leftField").innerHTML = namMember[lstMember[cmp1][head1]];
+      document.getElementById("rightField").innerHTML = namMember[lstMember[cmp2][head2]];
+      numQuestion++;
+    }
+
+    // Start the sorter
+    initList();
+    showImage();
+  </script>
+</body>
+</html>
